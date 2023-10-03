@@ -35,7 +35,11 @@ public class MinHeapStudentTest {
     }
 
     @Test(timeout = TIMEOUT)
-    public void testInitialization() {
+    public void
+
+
+
+    testInitialization() {
         assertEquals(0, minHeap.size());
         assertArrayEquals(new Comparable[MinHeap.INITIAL_CAPACITY],
                 minHeap.getBackingArray());

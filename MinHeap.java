@@ -1,12 +1,13 @@
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
 
 /**
  * Your implementation of a MinHeap.
  *
- * @author YOUR NAME HERE
+ * @author Quang Nguyen
  * @version 1.0
- * @userid YOUR USER ID HERE (i.e. gburdell3)
- * @GTID YOUR GT ID HERE (i.e. 900000000)
+ * @userid qnguyen305
+ * @GTID 903770019
  *
  * Collaborators: LIST ALL COLLABORATORS YOU WORKED WITH HERE
  *
@@ -34,7 +35,8 @@ public class MinHeap<T extends Comparable<? super T>> {
      * it to a T array.
      */
     public MinHeap() {
-
+        this.backingArray = (T[]) new Comparable[INITIAL_CAPACITY];
+        this.size = 0;
     }
 
     /**
@@ -61,7 +63,61 @@ public class MinHeap<T extends Comparable<? super T>> {
      *                                            is null
      */
     public MinHeap(ArrayList<T> data) {
+        if (data == null) {
+            throw new IllegalArgumentException("data is null");
+        }
 
+        this.backingArray = (T[]) new Comparable[(2 * data.size()) + 1];
+
+        for (int i = 1; i <= data.size(); i++) {
+            if (data.get(i - 1) == null) {
+                throw new IllegalArgumentException("element " + i + " is null");
+            }
+
+            this.backingArray[i] = data.get(i - 1);
+        }
+        this.size = data.size();
+
+        for (int i = this.size / 2; i > 0; i--) {
+            buildHeap(i);
+        }
+    }
+
+    /**
+     *
+     *
+     * @param currIndex the currIndex heap
+     * @return true or false
+     */
+
+    private boolean buildHeap(int currIndex) {
+        int leftChild = currIndex * 2;
+        int rightChild = currIndex * 2 + 1;
+        int smallestChild = currIndex;
+
+        if ((leftChild > this.size || rightChild > this.size)
+                || (this.backingArray[leftChild] == null && this.backingArray[rightChild] == null)) {
+            return false;
+        } else if (this.backingArray[leftChild] != null && this.backingArray[rightChild] != null) {
+            if (this.backingArray[leftChild].compareTo(this.backingArray[rightChild]) < 0) {
+                smallestChild = leftChild;
+            } else {
+                smallestChild = rightChild;
+            }
+        } else if (this.backingArray[leftChild] == null) {
+            smallestChild = rightChild;
+        } else if (this.backingArray[rightChild] == null) {
+            smallestChild = leftChild;
+        }
+
+        T temp = this.backingArray[smallestChild];
+        this.backingArray[smallestChild] = this.backingArray[currIndex];
+        this.backingArray[currIndex] = temp;
+
+
+        buildHeap(smallestChild);
+
+        return true;
     }
 
     /**
@@ -74,6 +130,28 @@ public class MinHeap<T extends Comparable<? super T>> {
      * @throws java.lang.IllegalArgumentException if data is null
      */
     public void add(T data) {
+        if (data == null) {
+            throw new IllegalArgumentException("data is null");
+        }
+
+        if (this.size >= this.backingArray.length) {
+            T[] temp = (T[]) new Comparable[2 * this.backingArray.length];
+            for (int i = 0; i < this.backingArray.length; i++) {
+                temp[i] = this.backingArray[i];
+            }
+            this.backingArray = temp;
+        }
+
+        this.backingArray[this.size + 1] = data;
+        this.size++;
+
+        for (int i = this.size; i > 1; i /= 2) {
+            if (this.backingArray[i].compareTo(this.backingArray[i / 2]) < 0) {
+                T temp = this.backingArray[i];
+                this.backingArray[i] = this.backingArray[i / 2];
+                this.backingArray[i / 2] = temp;
+            }
+        }
 
     }
 
@@ -87,7 +165,53 @@ public class MinHeap<T extends Comparable<? super T>> {
      * @throws java.util.NoSuchElementException if the heap is empty
      */
     public T remove() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("heap is empty");
+        }
+        T data = this.backingArray[1];
+        this.backingArray[1] = this.backingArray[this.size];
+        this.backingArray[this.size] = null;
+        this.size--;
 
+        downHeap(1);
+
+        return data;
+    }
+
+    /**
+     *
+     * @param currIndex the current index
+     * @return true or false
+     */
+    private boolean downHeap(int currIndex) {
+        int leftChild = currIndex * 2;
+        int rightChild = currIndex * 2 + 1;
+        int smallestChild = currIndex;
+
+        if ((leftChild > this.backingArray.length || rightChild > this.backingArray.length)
+                || (this.backingArray[leftChild] == null && this.backingArray[rightChild] == null)) {
+            return false;
+        } else if (this.backingArray[leftChild] != null && this.backingArray[rightChild] != null) {
+            if (this.backingArray[leftChild].compareTo(this.backingArray[rightChild]) < 0) {
+                smallestChild = leftChild;
+            } else {
+                smallestChild = rightChild;
+            }
+        } else if (this.backingArray[leftChild] == null) {
+            smallestChild = rightChild;
+        } else if (this.backingArray[rightChild] == null) {
+            smallestChild = leftChild;
+        }
+
+        if (this.backingArray[currIndex].compareTo(this.backingArray[smallestChild]) > 0) {
+            T temp = this.backingArray[currIndex];
+            this.backingArray[currIndex] = this.backingArray[smallestChild];
+            this.backingArray[smallestChild] = temp;
+        }
+
+        downHeap(smallestChild);
+
+        return true;
     }
 
     /**
@@ -97,7 +221,11 @@ public class MinHeap<T extends Comparable<? super T>> {
      * @throws java.util.NoSuchElementException if the heap is empty
      */
     public T getMin() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("heap is empty");
+        }
 
+        return this.backingArray[1];
     }
 
     /**
@@ -106,7 +234,7 @@ public class MinHeap<T extends Comparable<? super T>> {
      * @return true if empty, false otherwise
      */
     public boolean isEmpty() {
-
+        return this.size <= 0;
     }
 
     /**
@@ -116,7 +244,8 @@ public class MinHeap<T extends Comparable<? super T>> {
      * resets the size.
      */
     public void clear() {
-
+        this.backingArray = (T[]) new Comparable[INITIAL_CAPACITY];
+        this.size = 0;
     }
 
     /**
